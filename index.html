@@ -36,6 +36,7 @@
   .bow { font-size:3rem; line-height:1; filter:drop-shadow(0 3px 3px rgba(179,20,47,.3)); }
   .script { font-family:"Great Vibes", cursive; font-size:clamp(2.6rem,11vw,4rem); color:var(--hot); margin:6px 0 0; line-height:1.05; }
   h1 { font-family:"Playfair Display", serif; font-weight:700; font-size:clamp(1.8rem,8vw,2.8rem); letter-spacing:.04em; text-transform:uppercase; color:var(--cherry); margin:10px 0 0; line-height:1.1; }
+  h2 { font-family:"Great Vibes", cursive; font-weight:400; font-size:2.4rem; color:var(--hot); margin:0 0 4px; }
   .year { font-family:"Playfair Display", serif; font-style:italic; font-size:1.6rem; color:var(--gold); margin:6px 0 0; }
   .divider { display:flex; align-items:center; gap:12px; margin:26px auto; max-width:340px; color:var(--gold); }
   .divider::before, .divider::after { content:""; flex:1; height:1px; background:linear-gradient(90deg, transparent, var(--gold), transparent); }
@@ -45,7 +46,6 @@
   .details div { padding:4px 0; }
   .details dt { font-size:.75rem; font-weight:500; letter-spacing:.28em; text-transform:uppercase; color:var(--hot); }
   .details dd { margin:6px 0 0; font-family:"Playfair Display", serif; font-size:1.35rem; }
-  .tbd { color:#9b6b76; font-style:italic; }
   .dress { background:linear-gradient(135deg, #fde7ea, #fff); border:1px dashed var(--pink); border-radius:14px; padding:14px 16px; font-size:1rem; line-height:1.5; }
   .dress b { color:var(--cherry); font-weight:500; letter-spacing:.12em; text-transform:uppercase; font-size:.8rem; display:block; margin-bottom:2px; }
   .candles { display:flex; justify-content:center; align-items:flex-end; gap:14px; margin-top:30px; height:84px; }
@@ -61,13 +61,32 @@
   .candle:nth-child(4)::before { animation-delay:-.3s; }
   .candle:nth-child(5)::before { animation-delay:-1.9s; }
   @keyframes flicker { 0%,100% { transform:translateX(-50%) scale(1); opacity:1; } 50% { transform:translateX(-50%) scale(.9,1.08); opacity:.88; } }
+
+  /* RSVP form */
+  .rsvp-form { margin-top:30px; text-align:left; }
+  .rsvp-form h2 { text-align:center; }
+  .rsvp-note { text-align:center; margin:0 0 18px; font-size:.95rem; color:#7a4a56; }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:.75rem; font-weight:500; letter-spacing:.2em; text-transform:uppercase; color:var(--hot); margin-bottom:6px; }
+  .field input {
+    width:100%; padding:13px 14px; font:inherit; font-size:1rem; color:var(--ink);
+    background:#fff; border:1.5px solid var(--pink); border-radius:12px;
+  }
+  .field input:focus { outline:3px solid rgba(217,79,120,.35); border-color:var(--hot); }
+  .hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
   .rsvp {
-    display:inline-block; margin-top:30px; padding:14px 34px; background:linear-gradient(135deg, var(--hot), var(--cherry));
-    color:#fff; text-decoration:none; border-radius:999px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; font-size:.85rem;
+    display:block; width:100%; margin-top:22px; padding:15px 34px; border:0; cursor:pointer; font-family:inherit;
+    background:linear-gradient(135deg, var(--hot), var(--cherry)); color:#fff; border-radius:999px;
+    font-weight:500; letter-spacing:.18em; text-transform:uppercase; font-size:.85rem;
     box-shadow:0 8px 18px rgba(179,20,47,.35); transition:transform .15s ease, box-shadow .15s ease;
   }
   .rsvp:hover { transform:translateY(-2px); box-shadow:0 12px 22px rgba(179,20,47,.4); }
   .rsvp:focus-visible { outline:3px solid var(--gold); outline-offset:3px; }
+  .rsvp:disabled { opacity:.6; cursor:wait; transform:none; }
+  .status { text-align:center; margin:16px 0 0; font-size:1rem; min-height:1.4em; }
+  .status.ok { color:#1f6b3a; font-family:"Playfair Display", serif; font-style:italic; font-size:1.2rem; }
+  .status.err { color:var(--cherry); }
+
   .sparkle { position:fixed; pointer-events:none; color:#fff; text-shadow:0 0 8px rgba(255,255,255,.9); animation:twinkle 3s ease-in-out infinite; }
   @keyframes twinkle { 0%,100% { opacity:.2; transform:scale(.7); } 50% { opacity:1; transform:scale(1.1); } }
   @media (prefers-reduced-motion: reduce) { .candle::before, .sparkle { animation:none; } html { scroll-behavior:auto; } }
@@ -114,7 +133,80 @@
       <div class="candle" style="height:72px;background:linear-gradient(90deg,#9d1030,#d6304f,#9d1030)"></div>
     </div>
 
-    <a class="rsvp" href="#">RSVP Coming Soon</a>
+    <div class="divider" aria-hidden="true">✦</div>
+
+    <form class="rsvp-form" id="rsvp-form" novalidate>
+      <h2>RSVP</h2>
+      <p class="rsvp-note">Let us know you're coming!</p>
+
+      <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" placeholder="Name" autocomplete="name" required>
+      </div>
+      <div class="field">
+        <label for="guests">Guests Bringing</label>
+        <input type="number" id="guests" name="guests" placeholder="#" min="0" max="20" inputmode="numeric" required>
+      </div>
+      <div class="field">
+        <label for="food">Food Bringing</label>
+        <input type="text" id="food" name="food" placeholder="Food Item" required>
+      </div>
+
+      <div class="hp" aria-hidden="true">
+        <label>Leave this empty <input type="text" name="_honey" tabindex="-1" autocomplete="off"></label>
+      </div>
+
+      <button type="submit" class="rsvp" id="rsvp-btn">Send RSVP</button>
+      <p class="status" id="rsvp-status" role="status" aria-live="polite"></p>
+    </form>
   </main>
+
+  <script>
+    (function () {
+      var form = document.getElementById('rsvp-form');
+      var btn = document.getElementById('rsvp-btn');
+      var status = document.getElementById('rsvp-status');
+
+      function setStatus(msg, cls) { status.textContent = msg; status.className = 'status ' + (cls || ''); }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var name = form.name.value.trim();
+        var guests = form.guests.value.trim();
+        var food = form.food.value.trim();
+        if (!name || guests === '' || !food) { setStatus('Please fill in your name, guest count, and food item.', 'err'); return; }
+
+        btn.disabled = true;
+        setStatus('Sending...', '');
+
+        fetch('https://formsubmit.co/ajax/jeffwithajee@gmail.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            'Name': name,
+            'Guests Bringing': guests,
+            'Food Bringing': food,
+            _honey: form._honey.value,
+            _subject: name + ' Bachelder Party',
+            _template: 'table',
+            _captcha: 'false'
+          })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d && (d.success === 'true' || d.success === true)) {
+            form.reset();
+            setStatus('Thank you, ' + name + '! Your RSVP was sent. See you there!', 'ok');
+          } else {
+            throw new Error((d && d.message) || 'Send failed');
+          }
+        })
+        .catch(function () {
+          setStatus('Sorry, something went wrong. Please try again.', 'err');
+        })
+        .then(function () { btn.disabled = false; });
+      });
+    })();
+  </script>
 </body>
 </html>
