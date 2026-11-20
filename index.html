@@ -48,19 +48,8 @@
   .details dd { margin:6px 0 0; font-family:"Playfair Display", serif; font-size:1.35rem; }
   .dress { background:linear-gradient(135deg, #fde7ea, #fff); border:1px dashed var(--pink); border-radius:14px; padding:14px 16px; font-size:1rem; line-height:1.5; }
   .dress b { color:var(--cherry); font-weight:500; letter-spacing:.12em; text-transform:uppercase; font-size:.8rem; display:block; margin-bottom:2px; }
-  .candles { display:flex; justify-content:center; align-items:flex-end; gap:14px; margin-top:30px; height:84px; }
-  .candle { width:12px; border-radius:3px 3px 0 0; position:relative; }
-  .candle::before {
-    content:""; position:absolute; left:50%; top:-17px; width:9px; height:15px; transform:translateX(-50%);
-    border-radius:50% 50% 50% 50% / 65% 65% 35% 35%;
-    background:radial-gradient(circle at 50% 70%, #fff6c8 0 25%, #ffc94d 60%, #ff8a3d);
-    box-shadow:0 0 12px 4px rgba(255,190,80,.55); animation:flicker 2.4s ease-in-out infinite;
-  }
-  .candle:nth-child(2)::before { animation-delay:-.7s; }
-  .candle:nth-child(3)::before { animation-delay:-1.3s; }
-  .candle:nth-child(4)::before { animation-delay:-.3s; }
-  .candle:nth-child(5)::before { animation-delay:-1.9s; }
-  @keyframes flicker { 0%,100% { transform:translateX(-50%) scale(1); opacity:1; } 50% { transform:translateX(-50%) scale(.9,1.08); opacity:.88; } }
+  .wreath { margin:30px auto 0; max-width:300px; }
+  .wreath svg { width:100%; height:auto; display:block; filter:drop-shadow(0 8px 10px rgba(179,20,47,.25)); }
 
   /* RSVP form */
   .rsvp-form { margin-top:30px; text-align:left; }
@@ -89,7 +78,7 @@
 
   .sparkle { position:fixed; pointer-events:none; color:#fff; text-shadow:0 0 8px rgba(255,255,255,.9); animation:twinkle 3s ease-in-out infinite; }
   @keyframes twinkle { 0%,100% { opacity:.2; transform:scale(.7); } 50% { opacity:1; transform:scale(1.1); } }
-  @media (prefers-reduced-motion: reduce) { .candle::before, .sparkle { animation:none; } html { scroll-behavior:auto; } }
+  @media (prefers-reduced-motion: reduce) { .sparkle { animation:none; } html { scroll-behavior:auto; } }
 </style>
 </head>
 <body>
@@ -125,12 +114,8 @@
       Festive &amp; fabulous. Pinks, reds, velvet, and a little shimmer are encouraged.
     </div>
 
-    <div class="candles" aria-hidden="true">
-      <div class="candle" style="height:70px;background:linear-gradient(90deg,#9d1030,#d6304f,#9d1030)"></div>
-      <div class="candle" style="height:54px;background:linear-gradient(90deg,#e6c46a,#f7e3a1,#e6c46a)"></div>
-      <div class="candle" style="height:80px;background:linear-gradient(90deg,#d96a8a,#f4a6bc,#d96a8a)"></div>
-      <div class="candle" style="height:58px;background:linear-gradient(90deg,#2a7f86,#4fb3ba,#2a7f86)"></div>
-      <div class="candle" style="height:72px;background:linear-gradient(90deg,#9d1030,#d6304f,#9d1030)"></div>
+    <div class="wreath" aria-hidden="true">
+      <svg id="wreath" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
 
     <div class="divider" aria-hidden="true">✦</div>
@@ -161,6 +146,94 @@
     </form>
   </main>
 
+  <script>
+    (function () {
+      var svg = document.getElementById('wreath');
+      if (!svg) return;
+      var NS = 'http://www.w3.org/2000/svg';
+      var seed = 7;
+      function rnd() { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+      function el(name, attrs, parent) {
+        var n = document.createElementNS(NS, name);
+        for (var k in attrs) n.setAttribute(k, attrs[k]);
+        (parent || svg).appendChild(n);
+        return n;
+      }
+      function rad(d) { return d * Math.PI / 180; }
+      var CX = 150, CY = 150, R = 98;
+
+      var defs = el('defs', {});
+      function grad(id, c0, c1, c2) {
+        var g = el('radialGradient', { id: id, cx: '.35', cy: '.3', r: '.85' }, defs);
+        el('stop', { offset: '0', 'stop-color': c0 }, g);
+        el('stop', { offset: '.4', 'stop-color': c1 }, g);
+        el('stop', { offset: '1', 'stop-color': c2 }, g);
+      }
+      grad('gRed', '#ff9a9a', '#d4202e', '#7d0c1f');
+      grad('gPink', '#ffd0ec', '#e04aa8', '#8f1f66');
+      grad('gTeal', '#8ee6da', '#2aa398', '#17695f');
+      var vel = el('linearGradient', { id: 'gVel', x1: '0', y1: '0', x2: '1', y2: '1' }, defs);
+      el('stop', { offset: '0', 'stop-color': '#d4202e' }, vel);
+      el('stop', { offset: '1', 'stop-color': '#7d0c1f' }, vel);
+
+      // flocked pink base
+      el('circle', { cx: CX, cy: CY, r: R, fill: 'none', stroke: '#e99fb2', 'stroke-width': 40 });
+
+      // flocked needles
+      var pal = ['#f7c7d3', '#fde3ea', '#f3aebf', '#ffeff3', '#efa0b5', '#fbd5de'];
+      for (var i = 0; i < 260; i++) {
+        var a = rnd() * 360;
+        var r = R + (rnd() - 0.5) * 36;
+        var x1 = CX + r * Math.cos(rad(a)), y1 = CY + r * Math.sin(rad(a));
+        var dir = a + 55 + rnd() * 60 * (rnd() < 0.8 ? 1 : -1);
+        var len = 14 + rnd() * 14;
+        el('line', {
+          x1: x1, y1: y1,
+          x2: x1 + len * Math.cos(rad(dir)), y2: y1 + len * Math.sin(rad(dir)),
+          stroke: pal[Math.floor(rnd() * pal.length)],
+          'stroke-width': 3.5 + rnd() * 3, 'stroke-linecap': 'round'
+        });
+      }
+
+      // silver sprigs
+      [[-118, 118], [-8, 121], [160, 118], [100, 122]].forEach(function (p) {
+        var x = CX + p[1] * Math.cos(rad(p[0])), y = CY + p[1] * Math.sin(rad(p[0]));
+        for (var j = -1; j <= 1; j++) {
+          var d = p[0] + j * 22;
+          el('line', { x1: x, y1: y, x2: x + 20 * Math.cos(rad(d)), y2: y + 20 * Math.sin(rad(d)),
+            stroke: '#bdb7bd', 'stroke-width': 2.2, 'stroke-linecap': 'round' });
+        }
+      });
+
+      // ornaments: [angle, radius, size, colour]
+      var orn = [
+        [-128, 100, 17, 'gRed'], [-160, 98, 13, 'gRed'], [-98, 102, 10, 'gPink'], [-72, 101, 15, 'gPink'],
+        [-48, 98, 15, 'gRed'], [-22, 100, 11, 'gPink'], [-4, 99, 8, 'gRed'], [70, 102, 14, 'gRed'],
+        [96, 100, 15, 'gRed'], [118, 102, 12, 'gPink'], [140, 99, 9, 'gPink'], [166, 101, 10, 'gPink'],
+        [-110, 84, 8, 'gPink'], [-35, 84, 7, 'gPink'], [-150, 118, 7, 'gTeal'], [-88, 118, 7, 'gTeal'],
+        [152, 120, 6, 'gTeal']
+      ];
+      orn.forEach(function (o) {
+        var x = CX + o[1] * Math.cos(rad(o[0])), y = CY + o[1] * Math.sin(rad(o[0]));
+        el('circle', { cx: x + 1.5, cy: y + 2.5, r: o[2], fill: 'rgba(80,10,30,.25)' });
+        el('circle', { cx: x, cy: y, r: o[2], fill: 'url(#' + o[3] + ')' });
+        el('ellipse', { cx: x - o[2] * 0.35, cy: y - o[2] * 0.4, rx: o[2] * 0.28, ry: o[2] * 0.18,
+          fill: 'rgba(255,255,255,.75)', transform: 'rotate(-30 ' + (x - o[2] * 0.35) + ' ' + (y - o[2] * 0.4) + ')' });
+        el('rect', { x: x - 3, y: y - o[2] - 2.5, width: 6, height: 4, rx: 1, fill: '#d9b45a' });
+      });
+
+      // red velvet bow, lower right
+      var bx = CX + 100 * Math.cos(rad(38)), by = CY + 100 * Math.sin(rad(38));
+      var bow = el('g', { transform: 'translate(' + bx + ' ' + by + ')' });
+      el('path', { d: 'M-6 6 C-14 40 -22 52 -30 66 L-12 58 L-4 70 C2 44 4 24 6 8 Z', fill: 'url(#gVel)' }, bow);
+      el('path', { d: 'M4 8 C10 36 22 52 34 62 L36 44 L50 46 C36 30 22 16 10 4 Z', fill: 'url(#gVel)', opacity: '.95' }, bow);
+      el('path', { d: 'M0 0 C-16 -22 -40 -22 -44 -6 C-44 12 -20 14 0 4 Z', fill: 'url(#gVel)' }, bow);
+      el('path', { d: 'M0 0 C16 -22 40 -22 44 -6 C44 12 20 14 0 4 Z', fill: '#c01a2c' }, bow);
+      el('path', { d: 'M-34 -10 C-24 -14 -12 -10 -4 -2', fill: 'none', stroke: 'rgba(255,170,170,.55)', 'stroke-width': 2, 'stroke-linecap': 'round' }, bow);
+      el('path', { d: 'M34 -10 C24 -14 12 -10 4 -2', fill: 'none', stroke: 'rgba(255,170,170,.45)', 'stroke-width': 2, 'stroke-linecap': 'round' }, bow);
+      el('rect', { x: -8, y: -8, width: 16, height: 16, rx: 5, fill: '#8f1022' }, bow);
+    })();
+  </script>
   <script>
     (function () {
       var form = document.getElementById('rsvp-form');
